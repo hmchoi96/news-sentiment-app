@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
 # ✅ API Key
-NEWS_API_KEY = 'YOUR_API_KEY_HERE'
+NEWS_API_KEY = '0e28b7f94fc04e6b9d130092886cabc6'
 
 # ✅ Keyword Setting
 TOPIC_SETTINGS = {
@@ -202,5 +202,6 @@ def run_analysis():
             print("👋 Analysis finished. Have a great day!")
             break
 
-# 실행
-run_analysis()
+# execute
+if __name__ == "__main__":
+    run_analysis()
