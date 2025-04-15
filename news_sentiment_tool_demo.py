@@ -53,27 +53,23 @@ TOPIC_SETTINGS = {
     "inflation": {
         "search_term": "inflation",
         "keywords": ["inflation", "price index", "cpi", "ppi", "consumer price", "core inflation",
- "cost of living", "rising prices", "inflationary pressure", 
- "interest rates", "wage growth", "monetary tightening", "headline inflation", 
- "economic overheating", "sticky inflation", "disinflation"]
-
+        "cost of living", "rising prices", "inflationary pressure", 
+        "interest rates", "wage growth", "monetary tightening", "headline inflation", 
+        "economic overheating", "sticky inflation", "disinflation"]
     },
     "fed": {
         "search_term": "fed",
         "keywords": [
-    "federal reserve", "interest rate", "rate hike", "rate cut", "jerome powell",
-    "fed", "fomc", "central bank", "tightening", "pause", "pivot", "monetary policy"
-]
-
-
+        "federal reserve", "interest rate", "rate hike", "rate cut", "jerome powell",
+        "fed", "fomc", "central bank", "tightening", "pause", "pivot", "monetary policy"
+        ]
     },
     "unemployment": {
         "search_term": "employment",
         "keywords": [
-    "unemployment", "employment", "jobless", "nonfarm payroll", "labor market", "jobs report",
-    "layoffs", "job cuts", "hiring freeze", "job growth", "employment rate"
-]
-
+        "unemployment", "employment", "jobless", "nonfarm payroll", "labor market", "jobs report",
+        "layoffs", "job cuts", "hiring freeze", "job growth", "employment rate"
+        ]
     }
 }
 
@@ -140,8 +136,7 @@ def summarize_by_sentiment(articles, sentiment_label, keywords):
     ]
     if not texts:
         return "No related news articles found."
-    joined = "
-".join(texts)
+    joined = "\n".join(texts)
     max_tokens = 1000
     truncated = " ".join(joined.split()[:max_tokens])
     try:
@@ -174,8 +169,7 @@ def run_analysis():
     while True:
         topic = input("📝 Enter a keyword (Available: tariff, trump, inflation, fed, unemployment): ").strip().lower()
         if topic not in TOPIC_SETTINGS:
-            print(f"❌ '{topic}' is not available. Please try again.
-")
+            print(f"❌ '{topic}' is not available. Please try again.")
             continue
 
         setting = TOPIC_SETTINGS[topic]
