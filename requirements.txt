@@ -7,3 +7,5 @@ transformers
 # Data processing & chart
 requests
 matplotlib
+torch
+
