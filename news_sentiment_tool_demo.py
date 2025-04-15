@@ -1,27 +1,3 @@
-# 📊 Wiserbond News Sentiment Analyzer
-#
-# WHY – Why was this built?
-# Economic news is everywhere—but understanding what truly matters and how it's being perceived can be hard,
-# especially for people without a background in finance. Instead of reading through dozens of articles,
-# this tool helps users quickly grasp the emotional tone and key narratives surrounding major economic topics.
-#
-# HOW – How does it work?
-# The tool collects recent news articles on selected economic topics, filters them using targeted keywords,
-# classifies them by sentiment (positive/negative) using NLP, and generates concise summaries for both sides.
-# It also visualizes the sentiment distribution to make interpretation easier.
-#
-# WHAT – What does it do?
-# - Gathers news on selected topics: `tariff`, `trump`, `inflation`, `fed`, `unemployment`
-# - Filters out unrelated content using topic-specific keyword lists
-# - Performs AI-based sentiment analysis and summarization
-# - Separates and summarizes positive and negative coverage
-# - Visualizes the emotional tone with a simple bar chart
-#
-# This tool is especially helpful for non-finance professionals, strategy teams, and policymakers
-# who need clear, unbiased insights on complex economic signals—without reading everything.
-# Created by: Hyun Myung (Jamie) Choi, Wiserbond Research
-
-
 import requests
 from transformers import pipeline
 from datetime import datetime, timedelta
@@ -50,24 +26,25 @@ TOPIC_SETTINGS = {
     },
     "inflation": {
         "search_term": "inflation",
-        "keywords": ["inflation", "price index", "cpi", "ppi", "consumer price", "core inflation",
-        "cost of living", "rising prices", "inflationary pressure", 
-        "interest rates", "wage growth", "monetary tightening", "headline inflation", 
-        "economic overheating", "sticky inflation", "disinflation"
+        "keywords": [
+            "inflation", "price index", "cpi", "ppi", "consumer price", "core inflation",
+            "cost of living", "rising prices", "inflationary pressure",
+            "interest rates", "wage growth", "monetary tightening", "headline inflation",
+            "economic overheating", "sticky inflation", "disinflation"
         ]
     },
     "fed": {
         "search_term": "fed",
         "keywords": [
-        "federal reserve", "interest rate", "rate hike", "rate cut", "jerome powell",
-        "fed", "fomc", "central bank", "tightening", "pause", "pivot", "monetary policy"
+            "federal reserve", "interest rate", "rate hike", "rate cut", "jerome powell",
+            "fed", "fomc", "central bank", "tightening", "pause", "pivot", "monetary policy"
         ]
     },
     "unemployment": {
         "search_term": "employment",
         "keywords": [
-        "unemployment", "employment", "jobless", "nonfarm payroll", "labor market", "jobs report",
-        "layoffs", "job cuts", "hiring freeze", "job growth", "employment rate"
+            "unemployment", "employment", "jobless", "nonfarm payroll", "labor market", "jobs report",
+            "layoffs", "job cuts", "hiring freeze", "job growth", "employment rate"
         ]
     }
 }
@@ -92,7 +69,7 @@ def get_news(search_term, max_pages=4, page_size=100):
 
 def contains_keywords(text, keywords):
     text = (text or "").lower()
-    return sum(k in text for k in keywords) >= 1  # 최소 한 개 이상 포함
+    return sum(k in text for k in keywords) >= 1 # 최소 한 개 이상 포함
 
 def filter_articles(articles, keywords, max_filtered=50):
     seen_sources = set()
@@ -154,7 +131,6 @@ def draw_sentiment_chart(articles):
     labels = ['NEGATIVE', 'NEUTRAL', 'POSITIVE']
     colors = ['#d9534f', '#f7f1f1', '#bfaeff']
     values = [counts.get(label, 0) / total * 100 for label in labels]
-
     plt.figure(figsize=(8, 1.2))
     plt.barh(['Sentiment'], values, color=colors, edgecolor='black', height=0.4, left=[0, values[0], values[0]+values[1]])
     for i, (v, label) in enumerate(zip(values, labels)):
@@ -170,26 +146,20 @@ def run_analysis():
         if topic not in TOPIC_SETTINGS:
             print(f"❌ '{topic}' is not available. Please try again.")
             continue
-
         setting = TOPIC_SETTINGS[topic]
         search_term = setting['search_term']
         filter_keywords = setting['keywords']
-
         raw = get_news(search_term)
         filtered = filter_articles(raw, filter_keywords)
         analyzed = run_sentiment_analysis(filtered)
-
         pos_summary = summarize_by_sentiment(analyzed, 'POSITIVE', filter_keywords)
         neg_summary = summarize_by_sentiment(analyzed, 'NEGATIVE', filter_keywords)
-
         print(f"\n📅 News Summary for the Period: {FROM_DATE} to {datetime.today().strftime('%Y-%m-%d')}")
         print(f"📊 Analyzed {len(analyzed)} articles from {len(set(a['source'] for a in analyzed))} news sources.\n")
         print("🤖 AI Summary:")
         print(f"❗ Negative News: {neg_summary}")
         print(f"✅ Positive News: {pos_summary}")
-
         draw_sentiment_chart(analyzed)
-
         again = input("\n🔁 Would you like to analyze another topic? (yes / no): ").strip().lower()
         if again in ['no', 'n']:
             print("👋 Analysis finished. Have a great day!")
