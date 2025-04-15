@@ -18,14 +18,12 @@ def analyze_topic(topic):
     filtered = filter_articles(raw, keywords)
     analyzed = run_sentiment_analysis(filtered)
 
-    # 감성 개수 정리
     sentiment_counts = {"Positive": 0, "Neutral": 0, "Negative": 0}
     for a in analyzed:
         label = a["sentiment"].capitalize()
         if label in sentiment_counts:
             sentiment_counts[label] += 1
 
-    # 뉴스 기사 정리
     pos_news = [
         {"source": a["source"], "title": a["title"], "summary": a["description"]}
         for a in analyzed if a["sentiment"] == "POSITIVE"
@@ -35,13 +33,12 @@ def analyze_topic(topic):
         for a in analyzed if a["sentiment"] == "NEGATIVE"
     ]
 
-    # 전문가 요약
+    # 전문가 요약 포맷 개선 (줄바꿈 포함)
     expert_summary = (
-        "✅ Positive Insight: " + summarize_by_sentiment(analyzed, "POSITIVE", keywords) +
-        "\n\n❗ Negative Insight: " + summarize_by_sentiment(analyzed, "NEGATIVE", keywords)
+        "✅ **Positive Insight**\n\n" + summarize_by_sentiment(analyzed, "POSITIVE", keywords) +
+        "\n\n❗ **Negative Insight**\n\n" + summarize_by_sentiment(analyzed, "NEGATIVE", keywords)
     )
 
-    # 세션에 저장
     st.session_state["topic"] = topic
     st.session_state["sentiment_counts"] = sentiment_counts
     st.session_state["positive_news"] = pos_news
@@ -74,9 +71,9 @@ st.markdown(
 # Executive Summary
 st.markdown("### 🔍 Executive Summary")
 st.markdown("""
-This report provides an AI-powered sentiment analysis of recent news articles related to the selected topic.
-Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective.
-""")
+            This report provides an AI-powered sentiment analysis of recent news articles related to the selected topic.
+            Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective.
+        """)
 
 # Sentiment Chart
 st.markdown("### 📈 Sentiment Breakdown")
@@ -95,14 +92,14 @@ negative_news = st.session_state.get("negative_news", [])
 with st.expander("✅ Positive Coverage"):
     if positive_news:
         for item in positive_news:
-            st.markdown(f"- **[{item['source']}]** {item['title']} _“{item['summary']}”_")
+            st.markdown(f"- **[{item['source']}]** {item['title']}  \n_“{item['summary']}”_")
     else:
         st.markdown("_No positive news items found._")
 
 with st.expander("⚠️ Negative Coverage"):
     if negative_news:
         for item in negative_news:
-            st.markdown(f"- **[{item['source']}]** {item['title']} _“{item['summary']}”_")
+            st.markdown(f"- **[{item['source']}]** {item['title']}  \n_“{item['summary']}”_")
     else:
         st.markdown("_No negative news items found._")
 
@@ -110,13 +107,14 @@ with st.expander("⚠️ Negative Coverage"):
 st.markdown("### 💡 Wiserbond Interpretation")
 expert_summary = st.session_state.get("expert_summary", "")
 if expert_summary:
-    st.info(expert_summary)
+    st.markdown(f"<div style='white-space: pre-wrap'>{expert_summary}</div>", unsafe_allow_html=True)
 else:
     st.info("_No expert interpretation generated yet._")
 
 # Footer
 st.markdown("""---""")
 st.markdown("""
-<small>Wiserbond Research · wiserbond.ca · info@wiserbond.ca  
-This report was generated using the Wiserbond AI Sentiment Engine v1.0</small>
-""", unsafe_allow_html=True)
+            <small>Wiserbond Research · wiserbond.ca · info@wiserbond.ca  
+            This report was generated using the Wiserbond AI Sentiment Engine v1.0</small>
+            """, unsafe_allow_html=True
+            )
