@@ -1,18 +1,65 @@
 import streamlit as st
 from datetime import datetime
 import matplotlib.pyplot as plt
-
-# ------------------------------
-# App Config
-# ------------------------------
-st.set_page_config(
-    page_title="Wiserbond News Sentiment Report",
-    layout="centered"
+from news_sentiment_tool_demo import (
+    get_news, filter_articles, run_sentiment_analysis,
+    summarize_by_sentiment, TOPIC_SETTINGS
 )
 
 # ------------------------------
-# Header
+# 분석 실행 함수
 # ------------------------------
+def analyze_topic(topic):
+    setting = TOPIC_SETTINGS[topic]
+    search_term = setting["search_term"]
+    keywords = setting["keywords"]
+
+    raw = get_news(search_term)
+    filtered = filter_articles(raw, keywords)
+    analyzed = run_sentiment_analysis(filtered)
+
+    # 감성 개수 정리
+    sentiment_counts = {"Positive": 0, "Neutral": 0, "Negative": 0}
+    for a in analyzed:
+        label = a["sentiment"].capitalize()
+        if label in sentiment_counts:
+            sentiment_counts[label] += 1
+
+    # 뉴스 기사 정리
+    pos_news = [
+        {"source": a["source"], "title": a["title"], "summary": a["description"]}
+        for a in analyzed if a["sentiment"] == "POSITIVE"
+    ]
+    neg_news = [
+        {"source": a["source"], "title": a["title"], "summary": a["description"]}
+        for a in analyzed if a["sentiment"] == "NEGATIVE"
+    ]
+
+    # 전문가 요약
+    expert_summary = (
+        "✅ Positive Insight: " + summarize_by_sentiment(analyzed, "POSITIVE", keywords) +
+        "\n\n❗ Negative Insight: " + summarize_by_sentiment(analyzed, "NEGATIVE", keywords)
+    )
+
+    # 세션에 저장
+    st.session_state["topic"] = topic
+    st.session_state["sentiment_counts"] = sentiment_counts
+    st.session_state["positive_news"] = pos_news
+    st.session_state["negative_news"] = neg_news
+    st.session_state["expert_summary"] = expert_summary
+
+# ------------------------------
+# Streamlit UI 구성
+# ------------------------------
+st.set_page_config(page_title="Wiserbond News Sentiment Report", layout="centered")
+
+# Sidebar
+st.sidebar.title("🔍 Select Topic")
+topic_choice = st.sidebar.selectbox("Choose a topic", list(TOPIC_SETTINGS.keys()))
+if st.sidebar.button("Run Analysis"):
+    analyze_topic(topic_choice)
+
+# Header
 st.markdown(
     f"""
     <div style="text-align: left; padding-top: 30px;">
@@ -24,32 +71,24 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ------------------------------
 # Executive Summary
-# ------------------------------
 st.markdown("### 🔍 Executive Summary")
 st.markdown("""
 This report provides an AI-powered sentiment analysis of recent news articles related to the selected topic.
 Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective.
 """)
 
-# ------------------------------
 # Sentiment Chart
-# ------------------------------
 st.markdown("### 📈 Sentiment Breakdown")
-sentiment_counts = st.session_state.get("sentiment_counts", {"Positive": 10, "Neutral": 5, "Negative": 12})
-
+sentiment_counts = st.session_state.get("sentiment_counts", {"Positive": 0, "Neutral": 0, "Negative": 0})
 fig, ax = plt.subplots()
 ax.bar(sentiment_counts.keys(), sentiment_counts.values(), color=["#2ca02c", "#1f77b4", "#d62728"])
 ax.set_title("Sentiment Distribution")
 ax.set_ylabel("Number of Articles")
 st.pyplot(fig)
 
-# ------------------------------
-# News Highlights Section
-# ------------------------------
+# News Highlights
 st.markdown("### 📰 Key News Highlights")
-
 positive_news = st.session_state.get("positive_news", [])
 negative_news = st.session_state.get("negative_news", [])
 
@@ -67,21 +106,15 @@ with st.expander("⚠️ Negative Coverage"):
     else:
         st.markdown("_No negative news items found._")
 
-# ------------------------------
-# Expert Interpretation
-# ------------------------------
+# Expert Summary
 st.markdown("### 💡 Wiserbond Interpretation")
-
 expert_summary = st.session_state.get("expert_summary", "")
-
 if expert_summary:
     st.info(expert_summary)
 else:
     st.info("_No expert interpretation generated yet._")
 
-# ------------------------------
 # Footer
-# ------------------------------
 st.markdown("""---""")
 st.markdown("""
 <small>Wiserbond Research · wiserbond.ca · info@wiserbond.ca  
