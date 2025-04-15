@@ -53,7 +53,8 @@ TOPIC_SETTINGS = {
         "keywords": ["inflation", "price index", "cpi", "ppi", "consumer price", "core inflation",
         "cost of living", "rising prices", "inflationary pressure", 
         "interest rates", "wage growth", "monetary tightening", "headline inflation", 
-        "economic overheating", "sticky inflation", "disinflation"]
+        "economic overheating", "sticky inflation", "disinflation"
+        ]
     },
     "fed": {
         "search_term": "fed",
