@@ -1,28 +1,26 @@
-"""
-📊 Wiserbond News Sentiment Analyzer
+# 📊 Wiserbond News Sentiment Analyzer
+#
+# WHY – Why was this built?
+# Economic news is everywhere—but understanding what truly matters and how it's being perceived can be hard,
+# especially for people without a background in finance. Instead of reading through dozens of articles,
+# this tool helps users quickly grasp the emotional tone and key narratives surrounding major economic topics.
+#
+# HOW – How does it work?
+# The tool collects recent news articles on selected economic topics, filters them using targeted keywords,
+# classifies them by sentiment (positive/negative) using NLP, and generates concise summaries for both sides.
+# It also visualizes the sentiment distribution to make interpretation easier.
+#
+# WHAT – What does it do?
+# - Gathers news on selected topics: `tariff`, `trump`, `inflation`, `fed`, `unemployment`
+# - Filters out unrelated content using topic-specific keyword lists
+# - Performs AI-based sentiment analysis and summarization
+# - Separates and summarizes positive and negative coverage
+# - Visualizes the emotional tone with a simple bar chart
+#
+# This tool is especially helpful for non-finance professionals, strategy teams, and policymakers
+# who need clear, unbiased insights on complex economic signals—without reading everything.
+# Created by: Hyun Myung (Jamie) Choi, Wiserbond Research
 
-WHY – Why was this built?
-Economic news is everywhere—but understanding what truly matters and how it's being perceived can be hard,
-especially for people without a background in finance. Instead of reading through dozens of articles,
-this tool helps users quickly grasp the emotional tone and key narratives surrounding major economic topics.
-
-HOW – How does it work?
-The tool collects recent news articles on selected economic topics, filters them using targeted keywords,
-classifies them by sentiment (positive/negative) using NLP, and generates concise summaries for both sides.
-It also visualizes the sentiment distribution to make interpretation easier.
-
-WHAT – What does it do?
-- Gathers news on selected topics: `tariff`, `trump`, `inflation`, `fed`, `unemployment`
-- Filters out unrelated content using topic-specific keyword lists
-- Performs AI-based sentiment analysis and summarization
-- Separates and summarizes positive and negative coverage
-- Visualizes the emotional tone with a simple bar chart
-
-This tool is especially helpful for non-finance professionals, strategy teams, and policymakers
-who need clear, unbiased insights on complex economic signals—without reading everything.
-Created by: Hyun Myung (Jamie) Choi, Wiserbond Research
-
-"""
 
 import requests
 from transformers import pipeline
@@ -113,7 +111,7 @@ def filter_articles(articles, keywords, max_filtered=50):
     return filtered
 
 def run_sentiment_analysis(articles):
-    sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+    sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english", framework="pt")
     results = []
     for a in articles:
         text = f"{a['title']}. {a['description'] or ''}"
