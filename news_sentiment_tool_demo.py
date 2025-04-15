@@ -113,7 +113,7 @@ def filter_articles(articles, keywords, max_filtered=50):
     return filtered
 
 def run_sentiment_analysis(articles):
-    sentiment_pipeline = pipeline("sentiment-analysis")
+    sentiment_pipeline = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english", framework="pt")
     results = []
     for a in articles:
         text = f"{a['title']}. {a['description'] or ''}"
