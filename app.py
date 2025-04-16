@@ -47,7 +47,6 @@ def analyze_topic(topic):
         if a["sentiment"] == "NEGATIVE"
     ]
 
-    # 전문가 요약 줄바꿈 포함
     expert_summary = (
         "✅ **Positive Insight**\n\n"
         + summarize_by_sentiment(analyzed, "POSITIVE", keywords)
@@ -112,30 +111,44 @@ if "topic" in st.session_state:
     negative_news = st.session_state["negative_news"]
     expert_summary = st.session_state["expert_summary"]
 
+    # Executive Summary
     st.markdown("## 🔍 Executive Summary")
     st.markdown(
         "This report provides an AI-powered sentiment analysis of recent news articles related to the selected topic. "
         "Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective."
     )
 
-    # 감성 분석 차트
-    st.markdown("## 📈 Sentiment Breakdown")
-    labels = list(sentiment_counts.keys())
-    values = list(sentiment_counts.values())
+    # 감성 분석 차트 (비율 막대)
+    st.markdown("## 📈 Sentiment Breakdown (by proportion)")
+    total = sum(sentiment_counts.values())
+    if total > 0:
+        ratios = {
+            "Negative": sentiment_counts["Negative"] / total * 100,
+            "Neutral": sentiment_counts["Neutral"] / total * 100,
+            "Positive": sentiment_counts["Positive"] / total * 100,
+        }
 
-    fig, ax = plt.subplots()
-    ax.bar(labels, values, color=["#2ca02c", "#7f7f7f", "#d62728"])
-    ax.set_title("Sentiment Distribution")
-    ax.set_xlabel("Sentiment")
-    ax.set_ylabel("Number of Articles")
-    st.pyplot(fig)
+        fig, ax = plt.subplots(figsize=(8, 1.5))
+        colors = ['#d62728', '#7f7f7f', '#2ca02c']
+        lefts = [0, ratios["Negative"], ratios["Negative"] + ratios["Neutral"]]
+        widths = [ratios["Negative"], ratios["Neutral"], ratios["Positive"]]
+        labels = ["Negative", "Neutral", "Positive"]
+
+        for i in range(3):
+            ax.barh(["Sentiment"], widths[i], left=lefts[i], color=colors[i], edgecolor="white", label=labels[i])
+            if widths[i] > 5:
+                ax.text(lefts[i] + widths[i] / 2, 0, f"{labels[i]} {int(widths[i])}%", va='center', ha='center', fontsize=9, color='white')
+
+        ax.axis("off")
+        ax.set_title("Sentiment Ratio")
+        st.pyplot(fig)
+    else:
+        st.markdown("_No sentiment data to display._")
 
     # 뉴스 요약
     st.markdown("## 📰 Key News Highlights")
-
     st.markdown("### ✅ Positive Coverage")
     display_news_section("Positive", positive_news)
-
     st.markdown("### ⚠️ Negative Coverage")
     display_news_section("Negative", negative_news)
 
