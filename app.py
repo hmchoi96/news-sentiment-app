@@ -102,6 +102,13 @@ st.markdown(f"# 📊 Wiserbond News Sentiment Report")
 st.markdown(
     f"**Date:** {datetime.today().strftime('%B %d, %Y')} | **Topic:** {st.session_state.get('topic', 'Not selected')}"
 )
+st.markdown(
+    """
+    <small>This is a demo version. Please understand that it may take some time to analyze and summarize news.</small>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # 본문
 if "topic" in st.session_state:
@@ -160,7 +167,7 @@ if "topic" in st.session_state:
 st.markdown("""---""")
 st.markdown(
     """
-<small>Wiserbond Research · wiserbond.ca · info@wiserbond.ca  
+<small>Wiserbond Research · wiserbond.com · info@wiserbond.com
 This report was generated using the Wiserbond AI Sentiment Engine v1.0</small>
 """,
     unsafe_allow_html=True,
