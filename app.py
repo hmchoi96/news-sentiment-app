@@ -1,3 +1,4 @@
+
 import streamlit as st
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -9,9 +10,36 @@ from news_sentiment_tool_demo import (
     TOPIC_SETTINGS,
 )
 
-# ------------------------------
-# 분석 실행 함수
-# ------------------------------
+LANG_TEXT = {
+    "English": {
+        "header": "📊 Wiserbond News Sentiment Report",
+        "executive_summary": "## 🔍 Executive Summary\n\nThis report provides an AI-powered sentiment analysis of recent news articles related to the selected topic. Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective.",
+        "sentiment_chart": "## 📈 Sentiment Breakdown",
+        "positive_title": "### ✅ Positive Coverage",
+        "negative_title": "### ⚠️ Negative Coverage",
+        "expert_insight": "## 💡 Wiserbond Interpretation",
+        "footer": "<small>Wiserbond Research · <a href='https://wiserbond.com'>wiserbond.com</a> · hmchoi@wiserbond.com</small>"
+    },
+    "한국어": {
+        "header": "📊 와이저본드 뉴스 감정 분석 리포트",
+        "executive_summary": "## 🔍 핵심 요약\n\n이 보고서는 AI 기반의 감정 분석을 통해 최근 뉴스의 흐름과 내러티브를 정리했습니다.",
+        "sentiment_chart": "## 📈 감정 분포 차트",
+        "positive_title": "### ✅ 긍정 뉴스 요약",
+        "negative_title": "### ⚠️ 부정 뉴스 요약",
+        "expert_insight": "## 💡 Wiserbond 해석",
+        "footer": "<small>Wiserbond 리서치 · <a href='https://wiserbond.com'>wiserbond.com</a> · hmchoi@wiserbond.com</small>"
+    },
+    "Español": {
+        "header": "📊 Informe de Sentimiento de Noticias de Wiserbond",
+        "executive_summary": "## 🔍 Resumen Ejecutivo\n\nEste informe proporciona un análisis de sentimiento impulsado por IA sobre las noticias recientes relacionadas con el tema seleccionado.",
+        "sentiment_chart": "## 📈 Distribución de Sentimiento",
+        "positive_title": "### ✅ Cobertura Positiva",
+        "negative_title": "### ⚠️ Cobertura Negativa",
+        "expert_insight": "## 💡 Interpretación de Wiserbond",
+        "footer": "<small>Investigación Wiserbond · <a href='https://wiserbond.com'>wiserbond.com</a> · hmchoi@wiserbond.com</small>"
+    }
+}
+
 def analyze_topic(topic):
     setting = TOPIC_SETTINGS[topic]
     search_term = setting["search_term"]
@@ -60,9 +88,6 @@ def analyze_topic(topic):
     st.session_state["negative_news"] = neg_news
     st.session_state["expert_summary"] = expert_summary
 
-# ------------------------------
-# 뉴스 요약 표시 함수 (Top 3 + 확장)
-# ------------------------------
 def display_news_section(label, news_list, max_visible=3):
     if not news_list:
         st.markdown(f"_No {label.lower()} news found._")
@@ -86,89 +111,53 @@ def display_news_section(label, news_list, max_visible=3):
                 st.markdown(f"**Summary:** {news['summary']}")
                 st.write("---")
 
-# ------------------------------
-# Streamlit UI 구성
-# ------------------------------
 st.set_page_config(page_title="Wiserbond News Sentiment Report", layout="wide")
 
 # Sidebar
 st.sidebar.title("🔍 Select Topic")
 topic_choice = st.sidebar.selectbox("Choose a topic", list(TOPIC_SETTINGS.keys()))
+language_choice = st.sidebar.selectbox("🌐 Language / 언어 선택", ["English", "한국어", "Español"])
+st.session_state["language"] = language_choice
+texts = LANG_TEXT[st.session_state["language"]]
+
 if st.sidebar.button("Run Analysis"):
     analyze_topic(topic_choice)
 
 # Header
-st.markdown(f"# 📊 Wiserbond News Sentiment Report")
+st.markdown(f"# {texts['header']}")
 st.markdown(
     f"**Date:** {datetime.today().strftime('%B %d, %Y')} | **Topic:** {st.session_state.get('topic', 'Not selected')}"
 )
-st.markdown(
-    """
-    <small>This is a demo version. Please understand that it may take some time to analyze and summarize news.</small>
-    """,
-    unsafe_allow_html=True
-)
 
-
-# 본문
 if "topic" in st.session_state:
-    topic = st.session_state["topic"]
     sentiment_counts = st.session_state["sentiment_counts"]
     positive_news = st.session_state["positive_news"]
     negative_news = st.session_state["negative_news"]
     expert_summary = st.session_state["expert_summary"]
 
-    # Executive Summary
-    st.markdown("## 🔍 Executive Summary")
-    st.markdown(
-        "This report provides an AI-powered sentiment analysis of recent news articles related to the selected topic. "
-        "Below you’ll find a breakdown of media sentiment, narrative trends, and key takeaways to inform your perspective."
-    )
+    st.markdown(texts["executive_summary"])
+    st.markdown(texts["sentiment_chart"])
 
-    # 감성 분석 차트 (비율 막대)
-    st.markdown("## 📈 Sentiment Breakdown (by proportion)")
-    total = sum(sentiment_counts.values())
-    if total > 0:
-        ratios = {
-            "Negative": sentiment_counts["Negative"] / total * 100,
-            "Neutral": sentiment_counts["Neutral"] / total * 100,
-            "Positive": sentiment_counts["Positive"] / total * 100,
-        }
+    labels = list(sentiment_counts.keys())
+    values = list(sentiment_counts.values())
 
-        fig, ax = plt.subplots(figsize=(8, 1.5))
-        colors = ['#d62728', '#7f7f7f', '#2ca02c']
-        lefts = [0, ratios["Negative"], ratios["Negative"] + ratios["Neutral"]]
-        widths = [ratios["Negative"], ratios["Neutral"], ratios["Positive"]]
-        labels = ["Negative", "Neutral", "Positive"]
+    fig, ax = plt.subplots()
+    ax.bar(labels, values, color=["#2ca02c", "#7f7f7f", "#d62728"])
+    ax.set_title("Sentiment Distribution")
+    ax.set_xlabel("Sentiment")
+    ax.set_ylabel("Number of Articles")
+    st.pyplot(fig)
 
-        for i in range(3):
-            ax.barh(["Sentiment"], widths[i], left=lefts[i], color=colors[i], edgecolor="white", label=labels[i])
-            if widths[i] > 5:
-                ax.text(lefts[i] + widths[i] / 2, 0, f"{labels[i]} {int(widths[i])}%", va='center', ha='center', fontsize=9, color='white')
-
-        ax.axis("off")
-        ax.set_title("Sentiment Ratio")
-        st.pyplot(fig)
-    else:
-        st.markdown("_No sentiment data to display._")
-
-    # 뉴스 요약
     st.markdown("## 📰 Key News Highlights")
-    st.markdown("### ✅ Positive Coverage")
+    st.markdown(texts["positive_title"])
     display_news_section("Positive", positive_news)
-    st.markdown("### ⚠️ Negative Coverage")
+
+    st.markdown(texts["negative_title"])
     display_news_section("Negative", negative_news)
 
-    # 전문가 해석
-    st.markdown("## 💡 Wiserbond Interpretation")
+    st.markdown(texts["expert_insight"])
     st.markdown(f"<div style='white-space: pre-wrap'>{expert_summary}</div>", unsafe_allow_html=True)
 
 # Footer
-st.markdown("""---""")
-st.markdown(
-    """
-<small>Wiserbond Research · wiserbond.com · info@wiserbond.com
-This report was generated using the Wiserbond AI Sentiment Engine v1.0</small>
-""",
-    unsafe_allow_html=True,
-)
+st.markdown("---")
+st.markdown(texts["footer"], unsafe_allow_html=True)
