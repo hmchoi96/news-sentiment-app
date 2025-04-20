@@ -10,6 +10,9 @@ from news_sentiment_tool_demo import (
     TOPIC_SETTINGS,
 )
 
+# ------------------------------
+# 다국어 텍스트 설정
+# ------------------------------
 LANG_TEXT = {
     "English": {
         "header": "📊 Wiserbond News Sentiment Report",
@@ -40,10 +43,28 @@ LANG_TEXT = {
     }
 }
 
-def analyze_topic(topic):
+# ------------------------------
+# 산업별 키워드
+# ------------------------------
+INDUSTRY_KEYWORDS = {
+    "Supply Chain": ["logistics", "freight", "shipping", "port", "customs", "supply chain", "export", "import"],
+    "Consulting": ["client", "recommendation", "strategy", "project", "transformation", "management"],
+    "Retail": ["sales", "store", "consumer", "pricing", "discount", "e-commerce"],
+    "Finance": ["bank", "interest rate", "investment", "credit", "bond", "liquidity"],
+    "Manufacturing": ["factory", "production", "plant", "assembly", "automation", "capacity"]
+}
+
+# ------------------------------
+# 분석 실행 함수
+# ------------------------------
+def analyze_topic(topic, industry):
     setting = TOPIC_SETTINGS[topic]
     search_term = setting["search_term"]
     keywords = setting["keywords"]
+
+    if industry != "All":
+        keywords += INDUSTRY_KEYWORDS.get(industry, [])
+
     raw = get_news(search_term)
     filtered = filter_articles(raw, keywords)
     analyzed = run_sentiment_analysis(filtered)
@@ -54,26 +75,8 @@ def analyze_topic(topic):
         if label in sentiment_counts:
             sentiment_counts[label] += 1
 
-    pos_news = [
-        {
-            "source": a["source"],
-            "title": a["title"],
-            "summary": a["description"],
-            "score": a.get("score", 0),
-        }
-        for a in analyzed
-        if a["sentiment"] == "POSITIVE"
-    ]
-    neg_news = [
-        {
-            "source": a["source"],
-            "title": a["title"],
-            "summary": a["description"],
-            "score": a.get("score", 0),
-        }
-        for a in analyzed
-        if a["sentiment"] == "NEGATIVE"
-    ]
+    pos_news = [a for a in analyzed if a["sentiment"] == "POSITIVE"]
+    neg_news = [a for a in analyzed if a["sentiment"] == "NEGATIVE"]
 
     expert_summary = (
         "✅ **Positive Insight**\n\n"
@@ -83,6 +86,7 @@ def analyze_topic(topic):
     )
 
     st.session_state["topic"] = topic
+    st.session_state["industry"] = industry
     st.session_state["sentiment_counts"] = sentiment_counts
     st.session_state["positive_news"] = pos_news
     st.session_state["negative_news"] = neg_news
@@ -100,7 +104,7 @@ def display_news_section(label, news_list, max_visible=3):
     for news in visible:
         st.markdown(f"**Source:** {news['source']}")
         st.markdown(f"**Title:** {news['title']}")
-        st.markdown(f"**Summary:** {news['summary']}")
+        st.markdown(f"**Summary:** {news['description']}")
         st.write("---")
 
     if hidden:
@@ -108,25 +112,30 @@ def display_news_section(label, news_list, max_visible=3):
             for news in hidden:
                 st.markdown(f"**Source:** {news['source']}")
                 st.markdown(f"**Title:** {news['title']}")
-                st.markdown(f"**Summary:** {news['summary']}")
+                st.markdown(f"**Summary:** {news['description']}")
                 st.write("---")
 
+# ------------------------------
+# UI 구성
+# ------------------------------
 st.set_page_config(page_title="Wiserbond News Sentiment Report", layout="wide")
 
 # Sidebar
 st.sidebar.title("🔍 Select Topic")
 topic_choice = st.sidebar.selectbox("Choose a topic", list(TOPIC_SETTINGS.keys()))
+industry_choice = st.sidebar.selectbox("🏭 Select Industry (Optional)", ["All"] + list(INDUSTRY_KEYWORDS.keys()))
 language_choice = st.sidebar.selectbox("🌐 Language / 언어 선택", ["English", "한국어", "Español"])
+
 st.session_state["language"] = language_choice
-texts = LANG_TEXT[st.session_state["language"]]
+texts = LANG_TEXT[language_choice]
 
 if st.sidebar.button("Run Analysis"):
-    analyze_topic(topic_choice)
+    analyze_topic(topic_choice, industry_choice)
 
 # Header
 st.markdown(f"# {texts['header']}")
 st.markdown(
-    f"**Date:** {datetime.today().strftime('%B %d, %Y')} | **Topic:** {st.session_state.get('topic', 'Not selected')}"
+    f"**Date:** {datetime.today().strftime('%B %d, %Y')} | **Topic:** {st.session_state.get('topic', 'Not selected')} | **Industry:** {st.session_state.get('industry', 'All')}"
 )
 
 if "topic" in st.session_state:
@@ -158,6 +167,5 @@ if "topic" in st.session_state:
     st.markdown(texts["expert_insight"])
     st.markdown(f"<div style='white-space: pre-wrap'>{expert_summary}</div>", unsafe_allow_html=True)
 
-# Footer
 st.markdown("---")
 st.markdown(texts["footer"], unsafe_allow_html=True)
